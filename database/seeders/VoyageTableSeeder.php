@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Voyage;
 
 class VoyageTableSeeder extends Seeder
 {
@@ -13,6 +14,6 @@ class VoyageTableSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\Voyage::factory(10)->create();
+        Voyage::factory(10)->create();
     }
 }

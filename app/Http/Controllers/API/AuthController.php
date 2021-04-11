@@ -5,10 +5,14 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Passport;
 
 class AuthController extends Controller
 {
+    private $scope;
+
     public function register(Request $request)
     {
         $validatedData = $request->validate([
@@ -20,6 +24,7 @@ class AuthController extends Controller
         $validatedData['password'] = Hash::make($request->password);
 
         $user = User::create($validatedData);
+        $user->newUser();
 
         $accessToken = $user->createToken('authToken')->accessToken;
 
@@ -28,17 +33,26 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $loginData = $request->validate([
-            'email' => 'email|required',
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
             'password' => 'required'
         ]);
 
-        if (!auth()->attempt($loginData)) {
-            return response(['message' => 'This User does not exist, check your details'], 400);
+        if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password]) ) {
+
+            $user = Auth::user();
+            $userRole = $user->role()->first();
+
+            if ($userRole) {
+                $this->scope = $userRole->role;
+            }
+
+            $token = $user->createToken($user->email.'-'.now(), [$this->scope]);
+
+            return response()->json([
+                'token' => $token->accessToken
+            ]);
         }
-
-        $accessToken = auth()->user()->createToken('authToken')->accessToken;
-
-        return response(['user' => auth()->user(), 'access_token' => $accessToken]);
     }
+
 }

@@ -29,5 +29,16 @@ class AuthServiceProvider extends ServiceProvider
         if (!$this->app->routesAreCached()) {
             Passport::routes();
         }
+
+        // Mandatory to define Scope
+        Passport::tokensCan([
+            'admin' => 'Add/Edit/Delete Users',
+            'moderator' => 'Add/Edit Users',
+            'basic' => 'List Users'
+        ]);
+
+        Passport::setDefaultScope([
+            'basic'
+        ]);
     }
 }
