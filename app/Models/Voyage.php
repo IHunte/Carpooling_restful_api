@@ -15,6 +15,7 @@ class Voyage extends Model
      * @var array
      */
     protected $fillable = [
+        'user_id',
         'start',
         'destination',
         'date',
@@ -24,4 +25,14 @@ class Voyage extends Model
         'cotisation',
         'description'
     ];
+
+    /**
+     * Get the user that owns the Travel
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

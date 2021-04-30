@@ -50,8 +50,18 @@ class User extends Authenticatable
     public function newUser()
     {
         return Role::create([
-           'user_id' => $this->id,
+            'user_id' => $this->id,
             'role' => 'basic'
         ]);
+    }
+
+    /**
+     * Get the travel associated with the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function travel()
+    {
+        return $this->hasOne(Voyage::class);
     }
 }

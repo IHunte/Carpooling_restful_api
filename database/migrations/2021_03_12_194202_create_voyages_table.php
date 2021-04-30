@@ -15,6 +15,7 @@ class CreateVoyagesTable extends Migration
     {
         Schema::create('voyages', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained();
             $table->string('start');
             $table->string('destination');
             $table->date('date');
