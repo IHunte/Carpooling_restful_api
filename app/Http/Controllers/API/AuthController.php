@@ -2,26 +2,24 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Laravel\Passport\Passport;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AuthController extends Controller
 {
     private $scope;
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|max:55',
-            'email' => 'email|required|unique:users',
-            'password' => 'required|confirmed'
-        ]);
+        $validatedData = $request->validated();
 
-        $validatedData['password'] = Hash::make($request->password);
+        $validatedData['password'] = bcrypt($request->password);
 
         $user = User::create($validatedData);
         $user->newUser();
@@ -31,14 +29,11 @@ class AuthController extends Controller
         return response(['user' => $user, 'access_token' => $accessToken], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required'
-        ]);
+        $request->validated();
 
-        if( Auth::attempt(['email'=>$request->email, 'password'=>$request->password]) ) {
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
 
             $user = Auth::user();
             $userRole = $user->role()->first();
@@ -47,12 +42,11 @@ class AuthController extends Controller
                 $this->scope = $userRole->role;
             }
 
-            $token = $user->createToken($user->email.'-'.now(), [$this->scope]);
+            $token = $user->createToken($user->email . '-' . now(), [$this->scope]);
 
             return response()->json([
                 'token' => $token->accessToken
             ]);
         }
     }
-
 }
